@@ -16,6 +16,10 @@ public class Finance {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(unique = true, nullable = false)
+    private String username;
+    @Column(nullable = false)
+    private String password;
     private Long userId = 1L;
     private Timestamp timestamp;
     private String category;

@@ -1,9 +1,11 @@
-const API_BASE = "localhost:5000";
+import './App.css';
+const API_BASE = "http://localhost:5000";
+
 
 //Get Transactions
 export async function getTransactions() {
     try {
-        const response = await fetch('{API_BASE}/transactions');
+        const response = await fetch(`${API_BASE}/finances/all`);
         if (!response.ok) throw new Error("Failed to fetch transactions");
         return await response.json();
         }
@@ -17,7 +19,7 @@ export async function getTransactions() {
 //Add Transactions
 export async function addTransaction(data) {
     try {
-        const response = await fetch('{$API_BASE}/transactions', {
+        const response = await fetch(`${API_BASE}/finances/add`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
@@ -34,9 +36,9 @@ export async function addTransaction(data) {
 //Update Transactions
 export async function updateTransaction(id, data) {
     try {
-        const response = await fetch('{$API_BASE}/transactions/${id}', {
+        const response = await fetch(`${API_BASE}/finances/update/${id}`, {
             method: "PUT",
-            headers: { "Content-Type: application/json" },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
         });
         if (!response.ok) throw new Error("Failed to update transaction");
@@ -51,7 +53,7 @@ export async function updateTransaction(id, data) {
 //Delete Transactions
 export async function deleteTransaction(id) {
     try {
-        const response = await fetch('{$API_BASE}/transactions/${id}', {
+        const response = await fetch(`${API_BASE}/finances/delete/${id}`, {
             method: "DELETE",
         });
         if (!response.ok) throw new Error("Failed to delete transaction:");

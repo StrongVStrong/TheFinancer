@@ -1,38 +1,101 @@
-.App {
+/* App.css */
+
+/* Center align the entire app content */
+.app {
+  text-align: center;
+  margin: 40px auto;
+  max-width: 80%;
+}
+
+/* Finance Tracker header */
+h1 {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+h2 {
+  font-size: 1.5rem; /* Adjust the size if needed */
+  font-weight: bold;
+  text-align: center; /* Added to center the Transactions heading */
+  margin-top: 30px;
+  margin-bottom: 20px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+/* Button Styling */
+.button-container { /* Added this class */
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+  margin: 20px;
+}
+
+/* Add Transaction Button */
+button {
+  margin: 10px;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 5px;
+  background-color: #f2f2f2;
+  border: 1px solid #ccc;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #007bff;
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+/* Form styling */
+.form {
+  margin: 20px auto;
+  width: 60%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.form input {
+  width: 80%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+/* Center the table */
+table {
+  margin: 20px auto;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  text-align: center;
+}
+
+th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+/* Empty state message */
+td[colspan="9"] {
+  text-align: center;
+  font-style: italic;
+  color: #888;
+}
+
+/* Pagination styling */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.pagination button {
+  margin: 0 10px;
+  padding: 8px 12px;
 }
