@@ -64,3 +64,15 @@ export async function deleteTransaction(id) {
         throw error;
     }
 }
+
+// Get Transactions by User ID
+export async function getTransactionsByUserId(userId) {
+    try {
+        const response = await fetch(`${API_BASE}/finances/user/${userId}`);
+        if (!response.ok) throw new Error("Failed to fetch transactions for user");
+        return await response.json();
+    } catch (error) {
+        console.error("Error fetching transactions by user ID:", error);
+        throw error;
+    }
+}

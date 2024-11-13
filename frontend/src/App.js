@@ -1,14 +1,18 @@
 import logo from './logo.svg';
 import './App.css';
 import React, { useState, useEffect } from 'react';
-import { getTransactions, addTransaction, deleteTransaction, updateTransaction } from './api';
+import { getTransactions, addTransaction, deleteTransaction, updateTransaction, getTransactionsByUserId } from './api';
 function App() {
   const [transactions, setTransactions] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [formData, setFormData] = useState({ userId: '', timestamp: '', category: '', amount: '', vendor: '', location: '', notes: ''});
+  const [formData, setFormData] = useState({ userId: '', category: '', amount: '', vendor: '', location: '', notes: ''});
   const [updateData, setUpdateData] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 5;
+  const [userIdToFilter, setUserIdToFilter] = useState('');
+  const [filteredTransactions, setFilteredTransactions] = useState([]);
+  
+
   
   useEffect(() => {
     fetchTransactions();
@@ -29,15 +33,42 @@ function App() {
   };
 
   const handleAddTransaction = async () => {
-    await addTransaction(formData);
-    setFormData({userId: '', timestamp: '', category: '', amount: '', vendor: '', location: '', notes: ''});
-    fetchTransactions();
+    const formDataToSend = {
+      ...formData,
+      userId: parseInt(formData.userId, 10), // Convert userId to a number
+    };
+  
+    // Check if userId is actually a number before sending
+    if (isNaN(formDataToSend.userId)) {
+      console.error("Invalid User ID");
+      return;
+    }
+    if (!formData.userId) {
+      alert("User ID is required");
+      return;
+    }
+    try {
+      await addTransaction(formData);
+      setFormData({ userId: '', timestamp: '', category: '', amount: '', vendor: '', location: '', notes: '' });
+      fetchTransactions();
+        } catch (error) {
+      console.error("Failed to add transaction:", error);
+  }
     setShowAddForm(false);
   };
 
   const handleDeleteTransaction = async (id) => {
     await deleteTransaction(id);
     fetchTransactions();
+
+    // Calculate the total pages again after deletion
+    const totalRecords = transactions.length - 1; // One less after deletion
+    const totalPages = Math.ceil(totalRecords / recordsPerPage);
+
+    // If current page is empty, move back to the previous page
+    if (currentPage > totalPages && currentPage > 1) {
+      setCurrentPage(totalPages);
+    }
   };
 
   const handleUpdateRequest = (id) => {
@@ -61,17 +92,32 @@ function App() {
     fetchTransactions();
   };
 
+  const handleFilterByUserId = async () => {
+    if (userIdToFilter.trim() === "") {
+      alert("Please enter a valid User ID");
+      return;
+    }
+
+    try {
+      const data = await getTransactionsByUserId(userIdToFilter);
+  
+      // If no data is returned for the given userId, set filteredTransactions to an empty array
+      if (data.length === 0) {
+        setFilteredTransactions([]);
+      } else {
+        setFilteredTransactions(data);
+      }
+      setCurrentPage(1); // Reset to the first page when filtering
+    } catch (error) {
+      console.error("Error filtering by User ID:", error);
+      setFilteredTransactions([]); // Clear if there's an error fetching data
+    }
+  };
+
+
   const totalRecords = transactions.length;
   const totalPages = Math.ceil(totalRecords / recordsPerPage);
   const currentRecords = transactions.slice((currentPage - 1) * recordsPerPage, currentPage * recordsPerPage);
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) setCurrentPage(prev => prev + 1);
-  };
-  
-  const handlePreviousPage = () => {
-    if (currentPage > 1) setCurrentPage(prev => prev - 1);
-  };
 
 
   return (
@@ -87,7 +133,6 @@ function App() {
         <div className="form">
           <h2>Add Transaction</h2>
           <input name="userId" placeholder="User ID" value={formData.userId} onChange={handleInputChange} />
-          <input name="timestamp" placeholder="Timestamp" value={formData.timestamp} onChange={handleInputChange} />
           <input name="category" placeholder="Category" value={formData.category} onChange={handleInputChange} />
           <input name="amount" placeholder="Amount" value={formData.amount} onChange={handleInputChange} />
           <input name="vendor" placeholder="Vendor" value={formData.vendor} onChange={handleInputChange} />
@@ -96,7 +141,16 @@ function App() {
           <button onClick={handleAddTransaction}>Add</button>
         </div>
       )}
-
+      <div className="filter-container">
+          <input
+              type="text"
+              placeholder="Enter User ID"
+              value={userIdToFilter}
+              onChange={(e) => setUserIdToFilter(e.target.value)}
+          />
+          <button onClick={handleFilterByUserId}>Filter by User ID</button>
+          <button onClick={() => setFilteredTransactions([])}>Clear Filter</button>
+      </div>
       {/* Transaction Table with Pagination */}
       <h2>Transactions</h2>
       <table style={{ margin: 'auto', borderCollapse: 'collapse', width: '80%' }}>
@@ -114,12 +168,12 @@ function App() {
           </tr>
         </thead>
         <tbody>
-          {transactions.length > 0 ? (
-            transactions.map((transaction) => (
+          {(filteredTransactions.length > 0 ? filteredTransactions : currentRecords).length > 0 ? (
+            (filteredTransactions.length > 0 ? filteredTransactions : currentRecords).map((transaction) => (
               <tr key={transaction.id}>
                 <td>{transaction.id}</td>
                 <td>{transaction.userId}</td>
-                <td>{transaction.timestamp}</td>
+                <td>{new Date(transaction.timestamp).toLocaleString()}</td>
                 <td>{transaction.category}</td>
                 <td>{transaction.amount}</td>
                 <td>{transaction.vendor}</td>
@@ -135,13 +189,12 @@ function App() {
             // If no transactions, still render 5 empty rows
             Array.from({ length: 5 }).map((_, index) => (
               <tr key={`empty-${index}`}>
-                <td colSpan="9" style={{ textAlign: 'center' }}>No transactions available</td>
               </tr>
             ))
           )}
 
-          {/* Render empty rows if fewer than 5 entries */}
-          {Array.from({ length: Math.max(0, 5 - transactions.length) }).map((_, index) => (
+          {/* Render additional empty rows if there are fewer than 5 entries */}
+          {Array.from({ length: Math.max(0, 5 - (filteredTransactions.length > 0 ? filteredTransactions.length : currentRecords.length)) }).map((_, index) => (
             <tr key={`extra-empty-${index}`}>
               <td></td>
               <td></td>
@@ -155,6 +208,7 @@ function App() {
             </tr>
           ))}
         </tbody>
+
       </table>
 
 
@@ -173,7 +227,6 @@ function App() {
         <div className="form">
           <h2>Update Transaction</h2>
           <input name="userId" placeholder="User ID" value={updateData.userId} onChange={handleUpdateInputChange} />
-          <input name="timestamp" placeholder="Timestamp" value={updateData.timestamp} onChange={handleUpdateInputChange} />
           <input name="category" placeholder="Category" value={updateData.category} onChange={handleUpdateInputChange} />
           <input name="amount" placeholder="Amount" value={updateData.amount} onChange={handleUpdateInputChange} />
           <input name="vendor" placeholder="Vendor" value={updateData.vendor} onChange={handleUpdateInputChange} />

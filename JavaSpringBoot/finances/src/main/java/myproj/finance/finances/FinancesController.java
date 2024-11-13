@@ -3,6 +3,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Date;
+import java.sql.Timestamp;
+
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
@@ -15,8 +18,14 @@ public class FinancesController {
     //Insert
     @PostMapping("/add")
     public Finance addTransaction(@RequestBody Finance finance) {
-        finance.setUserId(1L);
-        return financeRepository.save(finance);
+        System.out.println("Received userId: " + finance.getUserId());
+    System.out.println("Received amount: " + finance.getAmount());
+    
+    // Set the timestamp
+    finance.setTimestamp(new Timestamp(new Date().getTime()));
+    
+    // Save the finance entry
+    return financeRepository.save(finance);
     }
 
     //Read
@@ -34,7 +43,7 @@ public class FinancesController {
                 finance.setCategory(updatedFinance.getCategory());
                 finance.setLocation(updatedFinance.getLocation());
                 finance.setNotes(updatedFinance.getNotes());
-                finance.setTimestamp(updatedFinance.getTimestamp());
+                finance.setTimestamp(new Timestamp(new Date().getTime()));
                 finance.setVendor(updatedFinance.getVendor());
                 return financeRepository.save(finance);
             })
@@ -51,6 +60,12 @@ public class FinancesController {
             })
             .orElseThrow(() -> new ResourceNotFoundException("Transaction not found with id " + id));
             
+    }
+
+    //Sort
+    @GetMapping("/user/{userId}")
+    public List<Finance> getTransactionsByUserId(@PathVariable Long userId) {
+        return financeRepository.findByUserIdOrderByTimestampDesc(userId);
     }
     
 

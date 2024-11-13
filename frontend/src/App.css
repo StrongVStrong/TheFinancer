@@ -99,3 +99,11 @@ td[colspan="9"] {
   margin: 0 10px;
   padding: 8px 12px;
 }
+
+.filter-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px; /* space between input and buttons */
+  margin-top: 20px; /* adjust for spacing from top */
+}
